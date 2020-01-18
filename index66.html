@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+
+  <script src="https://unpkg.com/gojs@2.1.6/release/go.js"></script>
+</head>
+
+<body onload="init()">
+  <br>
+  <div>
+
+    <br>
+    <br>
+  </div>
+  <div id="sample">
+    <!-- The DIV for the Diagram needs an explicit size or else we won't see anything.
+           This also adds a border to help see the edges of the viewport. -->
+    <div id="myDiagramDiv" style="border: solid 1px brown; width:400px; height:400px"></div>
+
+
+    <script id="code">
+
+      var $;
+      var myDiagram;
+      function init() {
+        $ = go.GraphObject.make;
+        diagram =
+          $(go.Diagram, "myDiagramDiv",  // must name or refer to the DIV HTML element
+            {
+              // don't initialize some properties until after a new model has been loaded
+              "InitialLayoutCompleted": loadDiagramProperties,  // a DiagramEvent listener
+
+              // have mouse wheel events zoom in and out instead of scroll up and down
+              "toolManager.mouseWheelBehavior": go.ToolManager.WheelZoom,
+
+              // specify a data object to copy for each new Node that is created by clicking
+              "clickCreatingTool.archetypeNodeData": { text: "new node" }
+            });
+   
+            function loadDiagramProperties(e) {
+        }
+//         Conversion functions
+// But what if you want the data property value for the location to be something 
+// other than a Point? You can provide a conversion function that converts 
+// the actual data property value to the needed value type or format.
+
+// For situations like this example, the Point class includes a static 
+// function, Point.parse, that you can use to convert a string into a Point
+//  object. It expects two numbers to be in the input string, representing the
+//   Point.x and Point.y values. It returns a Point object with those values.
+
+// You can pass a conversion function as the third argument to the Binding 
+// constructor. In this case it is Point.parse. This allows the location to be
+//  specified in the form of a string ("100 50") rather than as an expression that 
+//  returns a Point. For data properties on model objects, you will often want to use
+//   strings as the representation of Points, Sizes, Rects, Margins, and Spots, rather
+//    than references to objects of those classes. Strings are easily read and written 
+//    in JSON and XML. Trying to read/write classes of objects would take extra space
+//     and would require additional cooperation on the part of both the writer and the 
+//     reader.
+
+  diagram.nodeTemplate =
+    $(go.Node, "Auto",
+      new go.Binding("location", "loc", go.Point.parse),  // convert string into a Point value
+      $(go.Shape, "RoundedRectangle",
+        { fill: "white" },
+        new go.Binding("fill", "color")),
+      $(go.TextBlock,
+        { margin: 5 },
+        new go.Binding("text", "key"))
+    );
+
+  var nodeDataArray = [
+    { key: "Alpha", color: "lightblue", loc: "0 0" },  // note string values for location
+    { key: "Beta", color: "pink", loc: "100 50" }
+  ];
+  var linkDataArray = [
+    { from: "Alpha", to: "Beta" }
+  ];
+  diagram.model = new go.GraphLinksModel(nodeDataArray, linkDataArray);
+
+      }
+
+    </script>
+</body>
+
+</html>

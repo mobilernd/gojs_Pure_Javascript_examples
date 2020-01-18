@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <script src="https://unpkg.com/gojs@2.1.6/release/go.js"></script>
+</head>
+
+<body onload="init()">
+  <br>
+  <div>
+
+    <br>
+    <br>
+  </div>
+  <div id="sample">
+    <!-- The DIV for the Diagram needs an explicit size or else we won't see anything.
+           This also adds a border to help see the edges of the viewport. -->
+    <div id="myDiagramDiv" style="border: solid 1px brown; width:400px; height:400px"></div>
+
+
+    <script id="code">
+
+      var $;
+      var myDiagram;
+      function init() {
+        $ = go.GraphObject.make;
+        diagram =
+          $(go.Diagram, "myDiagramDiv",  // must name or refer to the DIV HTML element
+            {
+              // don't initialize some properties until after a new model has been loaded
+              "InitialLayoutCompleted": loadDiagramProperties,  // a DiagramEvent listener
+
+              // have mouse wheel events zoom in and out instead of scroll up and down
+              "toolManager.mouseWheelBehavior": go.ToolManager.WheelZoom,
+
+              // specify a data object to copy for each new Node that is created by clicking
+              "clickCreatingTool.archetypeNodeData": { text: "new node" }
+            });
+   
+            function loadDiagramProperties(e) {
+        }
+//         Changing data values
+// The examples above all depend on the data bindings being evaluated when the
+//  Part has been created and its Panel.data property is set to refer to the
+//   corresponding node or link data. These actions occur automatically when the
+//    Diagram creates diagram parts for the data in the model upon setting 
+//    Diagram.model.
+
+// However, GoJS cannot know when the data property of an arbitrary JavaScript
+//  object has been modified. If you want to change some data object in a model 
+//  and have the diagram be automatically updated, what you should do depends on
+//   the nature of the property that you are changing.
+
+// For most data properties, ones that the model does not treat specially but
+//  are data-bound, you can just call Model.setDataProperty. In this example we 
+//  modify the value of "highlight" on a node data object. For fun, this modification 
+//  occurs about twice a second.
+
+  diagram.nodeTemplate =
+    $(go.Node, "Auto",
+      { locationSpot: go.Spot.Center },
+      $(go.Shape, "RoundedRectangle",
+        { // default values if the data.highlight is undefined:
+          fill: "yellow", stroke: "orange", strokeWidth: 2 },
+        new go.Binding("fill", "highlight", function(v) { return v ? "pink" : "lightblue"; }),
+        new go.Binding("stroke", "highlight", function(v) { return v ? "red" : "blue"; }),
+        new go.Binding("strokeWidth", "highlight", function(v) { return v ? 3 : 1; })),
+      $(go.TextBlock,
+        { margin: 5 },
+        new go.Binding("text", "key"))
+    );
+
+  diagram.model.nodeDataArray = [
+    { key: "Alpha", highlight: false }  // just one node, and no links
+  ];
+
+  function flash() {
+    // all model changes should happen in a transaction
+    diagram.model.commit(function(m) {
+      var data = m.nodeDataArray[0];  // get the first node data
+      m.set(data, "highlight", !data.highlight);
+    }, "flash");
+  }
+  function loop() {
+    setTimeout(function() { flash(); loop(); }, 500);
+  }
+  loop();
+      }
+
+    </script>
+</body>
+
+</html>

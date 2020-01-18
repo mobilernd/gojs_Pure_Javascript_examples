@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <script src="https://unpkg.com/gojs@2.1.6/release/go.js"></script>
+</head>
+
+<body onload="init()">
+  <br>
+  <div>
+
+    <br>
+    <br>
+  </div>
+  <div id="sample">
+    <!-- The DIV for the Diagram needs an explicit size or else we won't see anything.
+           This also adds a border to help see the edges of the viewport. -->
+    <div id="myDiagramDiv" style="border: solid 1px brown; width:400px; height:400px"></div>
+
+
+    <script id="code">
+
+      var $;
+      var myDiagram;
+      function init() {
+        $ = go.GraphObject.make;
+        diagram =
+          $(go.Diagram, "myDiagramDiv",  // must name or refer to the DIV HTML element
+            {
+              // don't initialize some properties until after a new model has been loaded
+              "InitialLayoutCompleted": loadDiagramProperties,  // a DiagramEvent listener
+
+              // have mouse wheel events zoom in and out instead of scroll up and down
+              "toolManager.mouseWheelBehavior": go.ToolManager.WheelZoom,
+
+              // specify a data object to copy for each new Node that is created by clicking
+              "clickCreatingTool.archetypeNodeData": { text: "new node" }
+            });
+   
+            function loadDiagramProperties(e) {
+        }
+//         Changing graph structure
+// For data properties that the model knows about,
+//  such as "to" or "from" for link data, you must call the appropriate 
+//  model methods in order to modify the data property. Modifying a data
+//   property directly without calling the appropriate model method may
+//    cause inconsistencies or undefined behavior.
+
+// For node data, the model methods are Model.setCategoryForNodeData,
+//  Model.setKeyForNodeData, GraphLinksModel.setGroupKeyForNodeData,
+//   TreeModel.setParentKeyForNodeData, and TreeModel.setParentLinkCategoryForNodeData.
+//    For link data, the model methods are GraphLinksModel.setCategoryForLinkData,
+//     GraphLinksModel.setFromKeyForLinkData, GraphLinksModel.setFromPortIdForLinkData, 
+//     GraphLinksModel.setToKeyForLinkData, GraphLinksModel.setToPortIdForLinkData, 
+//     and GraphLinksModel.setLabelKeysForLinkData.
+
+// This example changes the "to" property of a link data, causing the link to
+//  connect to a different node.
+
+  diagram.nodeTemplate =
+    $(go.Node, "Auto",
+      { locationSpot: go.Spot.Center },
+      $(go.Shape, "RoundedRectangle",
+        { fill: "yellow", stroke: "orange", strokeWidth: 2 }),
+      $(go.TextBlock,
+        { margin: 5 },
+        new go.Binding("text", "key"))
+    );
+
+  var nodeDataArray = [
+    { key: "Alpha" },
+    { key: "Beta" },
+    { key: "Gamma" }
+  ];
+  var linkDataArray = [
+    { from: "Alpha", to: "Beta" }
+  ];
+  diagram.model = new go.GraphLinksModel(nodeDataArray, linkDataArray);
+
+  function switchTo() {
+    // all model changes should happen in a transaction
+    diagram.model.commit(function(m) {
+      var data = m.linkDataArray[0];  // get the first link data
+      if (m.getToKeyForLinkData(data) === "Beta")
+        m.setToKeyForLinkData(data, "Gamma");
+      else
+        m.setToKeyForLinkData(data, "Beta");
+    }, "reconnect link");
+  }
+  function loop() {
+    setTimeout(function() { switchTo(); loop(); }, 1000);
+  }
+  loop();
+
+      }
+
+    </script>
+</body>
+
+</html>

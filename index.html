@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <script src="https://unpkg.com/gojs@2.1.6/release/go.js"></script>
+</head>
+
+<body onload="init()">
+  <br>
+  <div>
+    <input type="button" onclick="shiftNode()" value="shiftNode()">
+   "nodedata.loc:"
+   <code id="bindTwoWayData">Point(10,0)</code>
+    <br>
+    <br>
+  </div>
+  <div id="sample">
+    <!-- The DIV for the Diagram needs an explicit size or else we won't see anything.
+           This also adds a border to help see the edges of the viewport. -->
+    <div id="myDiagramDiv" style="border: solid 1px brown; width:400px; height:400px"></div>
+
+
+    <script id="code">
+
+      var $;
+      var myDiagram;
+      function init() {
+        $ = go.GraphObject.make;
+        diagram =
+          $(go.Diagram, "myDiagramDiv",  // must name or refer to the DIV HTML element
+            {
+              // don't initialize some properties until after a new model has been loaded
+              "InitialLayoutCompleted": loadDiagramProperties,  // a DiagramEvent listener
+
+              // have mouse wheel events zoom in and out instead of scroll up and down
+              "toolManager.mouseWheelBehavior": go.ToolManager.WheelZoom,
+
+              // specify a data object to copy for each new Node that is created by clicking
+              "clickCreatingTool.archetypeNodeData": { text: "new node" }
+            });
+
+        function loadDiagramProperties(e) {
+        }
+//         Two-way data binding
+// All of the bindings above only transfer values from the source data to target 
+// properties. But sometimes you would like to be able to transfer values from 
+// GraphObjects back to the model data, to keep the model data up-to-date with 
+// the diagram. This is possible by using a TwoWay Binding, which can pass values
+//  not only from source to target, but also from the target object back to the source
+//   data.
+
+  diagram.nodeTemplate =
+    $(go.Node, "Auto",
+      { locationSpot: go.Spot.Center },
+      new go.Binding("location", "loc").makeTwoWay(),  // TwoWay Binding
+      $(go.Shape, "RoundedRectangle",
+        { fill: "lightblue", stroke: "blue", strokeWidth: 2 }),
+      $(go.TextBlock,
+        { margin: 5 },
+        new go.Binding("text", "key"))
+    );
+
+  var nodeDataArray = [
+    { key: "Alpha", loc: new go.Point(0, 0) }
+  ];
+  diagram.model = new go.GraphLinksModel(nodeDataArray);
+
+  shiftNode = (function() {  // define a function named "shiftNode" callable by button.onclick
+    // all model changes should happen in a transaction
+    diagram.commit(function(d) {
+      var data = d.model.nodeDataArray[0];  // get the first node data
+      var node = d.findNodeForData(data);   // find the corresponding Node
+      var p = node.location.copy();  // make a copy of the location, a Point
+      p.x += 10;
+      if (p.x > 200) p.x = 0;
+      // changing the Node.location also changes the data.loc property due to TwoWay binding
+      node.location = p;
+      // show the updated location held by the "loc" property of the node data
+      document.getElementById("bindTwoWayData").textContent = data.loc.toString();
+    }, "shift node");
+  });
+  shiftNode();  // initialize everything
+  // Just as you can use a conversion function when going from source to target, 
+  // you can supply a conversion function to Binding.makeTwoWay for going from target
+  //  to source. For example, to represent the location as a string in the model data
+  //   instead of as a Point:
+// storage representation of Points/Sizes/Rects/Margins/Spots is as strings, 
+//not objects:
+
+
+// new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify)
+
+
+// However, you must not have a TwoWay binding on the node data property that is the
+//  "key" property. (That defaults to the name "key" but is actually the value of 
+//  Model.nodeKeyProperty.) That property value must always be unique among all
+//   node data within the model and is known by the Model. A TwoWay binding might
+//    change the value, causing a multitude of problems. Similarly, the Node.key
+//     property is read-only, to prevent accidental changes of the key value.
+
+
+      }
+
+    </script>
+</body>
+
+</html>

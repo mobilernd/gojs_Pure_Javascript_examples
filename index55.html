@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+
+  <script src="https://unpkg.com/gojs@2.1.6/release/go.js"></script>
+</head>
+
+<body onload="init()">
+  <br>
+  <div>
+
+    <br>
+    <br>
+  </div>
+  <div id="sample">
+    <!-- The DIV for the Diagram needs an explicit size or else we won't see anything.
+           This also adds a border to help see the edges of the viewport. -->
+    <div id="myDiagramDiv" style="border: solid 1px brown; width:400px; height:400px"></div>
+
+
+    <script id="code">
+
+      var $;
+      var myDiagram;
+      function init() {
+        $ = go.GraphObject.make;
+        diagram =
+          $(go.Diagram, "myDiagramDiv",  // must name or refer to the DIV HTML element
+            {
+              // don't initialize some properties until after a new model has been loaded
+              "InitialLayoutCompleted": loadDiagramProperties,  // a DiagramEvent listener
+
+              // have mouse wheel events zoom in and out instead of scroll up and down
+              "toolManager.mouseWheelBehavior": go.ToolManager.WheelZoom,
+
+              // specify a data object to copy for each new Node that is created by clicking
+              "clickCreatingTool.archetypeNodeData": { text: "new node" }
+            });
+
+        var violetbrush = $(go.Brush, "Linear", { 0.0: "Violet", 1.0: "Lavender" });
+
+        diagram.nodeTemplate =
+          $(go.Node, "Auto",
+            $(go.Shape, "RoundedRectangle",
+              { fill: "white" },
+              new go.Binding("fill", "color")),  // shape.fill = data.color
+            $(go.TextBlock,
+              { margin: 5 },
+              new go.Binding("text", "key"))  // textblock.text = data.key
+          );
+
+        diagram.linkTemplate =
+          $(go.Link,
+            $(go.Shape,
+              new go.Binding("stroke", "color"),  // shape.stroke = data.color
+              new go.Binding("strokeWidth", "thick")),  // shape.strokeWidth = data.thick
+            $(go.Shape,
+              { toArrow: "OpenTriangle", fill: null },
+              new go.Binding("stroke", "color"),  // shape.stroke = data.color
+              new go.Binding("strokeWidth", "thick"))  // shape.strokeWidth = data.thick
+          );
+
+        var nodeDataArray = [
+          { key: "Alpha", color: "lightblue" },
+          { key: "Beta", color: "pink" }
+        ];
+        var linkDataArray = [
+          { from: "Alpha", to: "Beta", color: "blue", thick: 2 }
+        ];
+        diagram.model = new go.GraphLinksModel(nodeDataArray, linkDataArray);
+        // the DiagramEvent listener for "InitialLayoutCompleted"
+        function loadDiagramProperties(e) {
+        }
+
+
+      }
+
+    </script>
+</body>
+
+</html>

@@ -1,2 +1,14 @@
-# gojs_Pure_Javascript_examples
-Pure Javascript examples of gojs using html files
+
+important link is :
+
+https://gojs.net/latest/intro/transactions.html
+
+
+
+Other links in this link below : 
+
+https://gojs.net/latest/intro/index.html
+
+
+https://gojs.net/latest/intro/links.html
+

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <script src="https://unpkg.com/gojs@2.1.6/release/go.js"></script>
+</head>
+
+<body onload="init()">
+  <br>
+  <div>
+
+    <br>
+    <br>
+  </div>
+  <div id="sample">
+    <!-- The DIV for the Diagram needs an explicit size or else we won't see anything.
+           This also adds a border to help see the edges of the viewport. -->
+    <div id="myDiagramDiv" style="border: solid 1px brown; width:400px; height:400px"></div>
+
+
+    <script id="code">
+
+      var $;
+      var myDiagram;
+      function init() {
+        $ = go.GraphObject.make;
+        diagram =
+          $(go.Diagram, "myDiagramDiv",  // must name or refer to the DIV HTML element
+            {
+              // don't initialize some properties until after a new model has been loaded
+              "InitialLayoutCompleted": loadDiagramProperties,  // a DiagramEvent listener
+
+              // have mouse wheel events zoom in and out instead of scroll up and down
+              "toolManager.mouseWheelBehavior": go.ToolManager.WheelZoom,
+
+              // specify a data object to copy for each new Node that is created by clicking
+              "clickCreatingTool.archetypeNodeData": { text: "new node" }
+            });
+   
+            function loadDiagramProperties(e) {
+        }
+//         Binding to GraphObject sources
+// The binding source object need not be a plain JavaScript data object
+//  held in the diagram's model. The source object may instead be a named 
+//  GraphObject in the same Part. 
+//  The source property must be a settable property of the class.
+//  The binding is evaluated when the property is set to a new value.
+
+// One common use of such a binding is to change the appearance of a Part
+//  when the Part.isSelected. Call Binding.ofObject to cause the Binding to
+//   use the object whose GraphObject.name is the given name. Use the empty 
+//   string, "", or no argument, to refer to the whole Part itself. 
+//   This is a convenience so that you do not need to name the whole Part.
+//    "ofObject" really means "of the GraphObject named ...", as 
+//    found by Panel.findObject when there is a string argument.
+
+// In the example below, the Shape.fill is bound to the Part.isSelected
+//  property.
+//   When the node is selected or de-selected, the Part.isSelected property
+//    changes value, so the binding is evaluated. The conversion function gets
+//     a boolean value and returns the desired brush color to be used as 
+//     the shape's fill. This example also turns off selection adornments, 
+//     so that the only visual way to tell that a node is selected is by the
+//      shape's fill color.
+
+  diagram.nodeTemplate =
+    $(go.Node, "Auto",
+      { selectionAdorned: false },  // no blue selection handle!
+      $(go.Shape, "RoundedRectangle",
+        // bind Shape.fill to Node.isSelected converted to a color
+        new go.Binding("fill", "isSelected", function(sel) 
+        {
+              console.log(sel)
+              return sel ? "dodgerblue" : "lightgray";
+            }).ofObject()),  // no name means bind to the whole Part
+      $(go.TextBlock,
+        { margin: 5 },
+        new go.Binding("text", "descr"))
+    );
+
+  diagram.model.nodeDataArray = [
+    { descr: "Select me!" },
+    { descr: "I turn blue when selected." }
+  ];
+
+      }
+
+    </script>
+</body>
+
+</html>

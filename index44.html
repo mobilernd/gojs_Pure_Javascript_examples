@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+
+  <script src="https://unpkg.com/gojs@2.1.6/release/go.js"></script>
+</head>
+
+<body onload="init()">
+   <br>
+  <div>
+<button  onclick="remove_node()">Remove node element</button>
+   <br>
+   <br>
+  </div>
+  <div id="sample">
+    <!-- The DIV for the Diagram needs an explicit size or else we won't see anything.
+           This also adds a border to help see the edges of the viewport. -->
+    <div id="myDiagramDiv" style="border: solid 1px brown; width:400px; height:400px"></div>
+
+
+    <script id="code">
+
+        var mygraphobject_made ;
+        var myDiagram  ; 
+      function init() {
+         mygraphobject_made = go.GraphObject.make;
+         myDiagram =
+          mygraphobject_made(go.Diagram, "myDiagramDiv",  // must name or refer to the DIV HTML element
+            {
+              // don't initialize some properties until after a new model has been loaded
+              "InitialLayoutCompleted": loadDiagramProperties,  // a DiagramEvent listener
+
+              // have mouse wheel events zoom in and out instead of scroll up and down
+              "toolManager.mouseWheelBehavior": go.ToolManager.WheelZoom,
+
+              // specify a data object to copy for each new Node that is created by clicking
+              "clickCreatingTool.archetypeNodeData": { text: "new node" }
+            });
+      
+        var violetbrush = mygraphobject_made(go.Brush, "Linear", { 0.0: "Violet", 1.0: "Lavender" });
+
+        myDiagram.nodeTemplate =
+        mygraphobject_made(go.Node, "Auto",
+        mygraphobject_made(go.Shape,
+        { figure: "Ellipse" },
+        new go.Binding("fill", "color")),
+        mygraphobject_made(go.TextBlock,
+        { margin: 5 },
+        new go.Binding("text", "key"))
+    );
+
+  var nodeDataArray = [
+    { key: "Alpha", color: "lightblue" },
+    { key: "Beta", parent: "Alpha", color: "yellow" },  // note the "parent" property
+    { key: "Gamma", parent: "Alpha", color: "orange" },
+    { key: "Delta", parent: "Alpha", color: "lightgreen" }
+  ];
+  myDiagram.model = new go.TreeModel(nodeDataArray);
+
+
+        // the DiagramEvent listener for "InitialLayoutCompleted"
+        function loadDiagramProperties(e) {
+        }
+
+
+      }
+      
+      function remove_node() {
+
+         var data = myDiagram.model.findNodeDataForKey("Alpha");
+        //  console.log(data.color);
+        var nodes = myDiagram.findNodesByExample({ key: "Alpha" });
+        nodes.each(function(n) { 
+          console.log(n.key); 
+          myDiagram.model.removeNodeData(data);
+        
+        });
+
+    //     var data = myDiagram.model.findNodeDataForKey("Delta");
+    // // This will update the color of the "Delta" Node
+    // if (data !== null) myDiagram.model.setDataProperty(data, "color", "red");
+
+      }
+    </script>
+</body>
+
+</html>

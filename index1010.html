@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <script src="https://unpkg.com/gojs@2.1.6/release/go.js"></script>
+</head>
+
+<body onload="init()">
+  <br>
+  <div>
+    <button onclick="changeColor()">Change shared color</button>
+    <br>
+    <br>
+  </div>
+  <div id="sample">
+    <!-- The DIV for the Diagram needs an explicit size or else we won't see anything.
+           This also adds a border to help see the edges of the viewport. -->
+    <div id="myDiagramDiv" style="border: solid 1px brown; width:400px; height:400px"></div>
+
+
+    <script id="code">
+
+      var $;
+      var myDiagram;
+      function init() {
+        $ = go.GraphObject.make;
+        diagram =
+          $(go.Diagram, "myDiagramDiv",  // must name or refer to the DIV HTML element
+            {
+              // don't initialize some properties until after a new model has been loaded
+              "InitialLayoutCompleted": loadDiagramProperties,  // a DiagramEvent listener
+
+              // have mouse wheel events zoom in and out instead of scroll up and down
+              "toolManager.mouseWheelBehavior": go.ToolManager.WheelZoom,
+
+              // specify a data object to copy for each new Node that is created by clicking
+              "clickCreatingTool.archetypeNodeData": { text: "new node" }
+            });
+
+        function loadDiagramProperties(e) {
+        }
+        //         Binding to the shared Model.modelData source
+        // The binding source object may be a third kind of source,
+        //  besides the Panel.data or some GraphObject within the panel. 
+        //  It can also be the JavaScript Object that is the shared Model.
+        //  modelData object. This permits binding of Node or Link element 
+        //  properties to shared properties in the model that will exist and 
+        //  may be modified even though no nodes or links exist in the model.
+
+        // In the example below, the Shape.fill is bound to the "color" property
+        //  on the Model.modelData object. As you click the button the changeColor 
+        //  function modifies the modelData object by calling Model.setDataProperty.
+
+        diagram.nodeTemplate =
+          $(go.Node, "Auto",
+            $(go.Shape, "RoundedRectangle",
+              { fill: "white" },  // the default value if there is no modelData.color property
+              new go.Binding("fill", "color").ofModel()),  // meaning a property of Model.modelData
+            $(go.TextBlock,
+              { margin: 5 },
+              new go.Binding("text"))
+          );
+
+        // start all nodes yellow
+        diagram.model.modelData.color = "yellow";
+
+        diagram.model.nodeDataArray = [
+          { text: "Alpha" },
+          { text: "Beta" }
+        ];
+
+        diagram.undoManager.isEnabled = true;
+
+        changeColor = function () {  // define a function named "changeColor" callable by button.onclick
+          diagram.model.commit(function (m) {
+            // alternate between lightblue and lightgreen colors
+            var oldcolor = m.modelData.color;
+            var newcolor = (oldcolor === "lightblue" ? "lightgreen" : "lightblue");
+            m.set(m.modelData, "color", newcolor);
+          }, "changed shared color");
+        }
+
+      }
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+
+    <script src="https://unpkg.com/gojs@2.1.6/release/go.js"></script>
+</head>
+<body onload="init()">
+    <div id="sample">
+      <!-- The DIV for the Diagram needs an explicit size or else we won't see anything.
+           This also adds a border to help see the edges of the viewport. -->
+<div id="myDiagramDiv" style="border: solid 1px brown; width:400px; height:400px"></div>
+
+
+<script id="code">
+  function init() {
+    var diagram = new go.Diagram("myDiagramDiv");
+    var a$tt_from_baskota = go.GraphObject.make;
+    diagram.add(
+    a$tt_from_baskota(go.Node, go.Panel.Auto,
+    a$tt_from_baskota(go.Shape,
+        { figure: "RoundedRectangle",
+          fill: "lightblue" }),
+          a$tt_from_baskota(go.TextBlock,
+        { text: "Hello mahmoud!",
+          margin: 5 })
+    ));
+  }
+</script>
+</body>
+</html>
